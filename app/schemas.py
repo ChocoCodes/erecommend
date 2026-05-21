@@ -3,7 +3,7 @@ from typing import List, Optional
 
 class ProfileItem(BaseModel):
     title: str 
-    description: str 
+    description: Optional[str] = None 
     issuer: Optional[str] = None 
     organization: Optional[str] = None 
     category: str 

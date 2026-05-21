@@ -3,7 +3,7 @@ from app.schemas import StudentProfile
 def standardized_grade_percentage(gwa: float) -> float:
     """ 
         Transforms a 1.0 - 5.0 grade_percentage metric scale into a standardized percentage value.
-        Result = 100 - ((grade_percentage - 1) * 12.5)
+        Result = 100 - ((grade_percentage - 1) * 10.0)
     """
     if gwa < 1.0 or gwa > 5.0: return 75.0
     return round(100.0 - ((gwa - 1) * 10.0), 2)
@@ -70,7 +70,7 @@ def apply_bonus(student_special_group: str | None) -> int:
     return 5 if student_special_group in special_groups else 0
 
 def get_match_category(rating: float) -> str:
-    if rating >= 88.0: return "Strong"
-    elif rating >= 75.0: return "Good"
-    else: return "Fair"
+    if rating >= 88.0: return "strong"
+    elif rating >= 75.0: return "good"
+    else: return "fair"
     

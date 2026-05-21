@@ -20,9 +20,9 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Replace later with deployed URL and localhost
+    allow_origins=["http://localhost:3000"], # Replace later with deployed URL and localhost
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["POST", "GET"],
     allow_headers=["*"],
 )
 
@@ -65,8 +65,8 @@ async def recommend(payload: RecommendationPayload):
         results = generate_recommendations(
             regulatory_score=regulatory_score,
             student_profile=profile_text,
-            scholarships=scholarships,
-            student_annual_income=student.annual_family_income
+            student_annual_income=student.annual_family_income,
+            scholarships=scholarships
         )
 
         return results
