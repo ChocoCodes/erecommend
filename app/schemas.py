@@ -37,7 +37,15 @@ class RecommendationPayload(BaseModel):
     student: StudentProfile 
     scholarships: List[Scholarship]
 
+class ScoreBreakdown(BaseModel):
+    eligibility: float
+    profile: float 
+    academic: float
+    income: float 
+    bonus: float
+
 class RecommendationResult(BaseModel):
     id: int 
     e_recommend: float 
     match: str 
+    breakdown: ScoreBreakdown

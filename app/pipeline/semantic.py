@@ -32,7 +32,7 @@ def cosine_similarity(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
     return float(dot / (norm_a * norm_b))
 
 def generate_recommendations(
-        regulatory_score: float, 
+        eligibility_score: float, 
         student_profile: str, 
         student_annual_income: float, 
         scholarships: List[Scholarship]
@@ -54,15 +54,17 @@ def generate_recommendations(
         scholarship_vector = get_embedding(s.description)
         similarity = cosine_similarity(student_vector, scholarship_vector)
 
-        semantic_score_norm = max(0.0, similarity * 100.0)
-        final_score = (regulatory_score * 0.70) + (semantic_score_norm * 0.30)
+        semantic_score_norm = max(0.0, similarity * 100.0) * 0.30
+        final_score = (eligibility_score * 0.70) + semantic_score_norm
 
         match = get_match_category(final_score)
 
         recommendations.append({
             "id": s.id,
             "e_recommend": round(final_score, 2),
-            "match": match
+            "match": match,
+            'eligibility': eligibility_score * 0.70,
+            "profile": semantic_score_norm
         })
     
     recommendations.sort(key=lambda x: x['e_recommend'], reverse=True)

@@ -31,7 +31,7 @@ async def health():
     """ Check if the API is currently active. """
     return {
         "status": "healthy",
-        "engine": "eRecommend active."
+        "message": "eRecommend active."
     }
 
 @app.post("/api/v1/recommend")
@@ -47,28 +47,36 @@ async def recommend(payload: RecommendationPayload):
         student.gwa = standardized_grade_percentage(student.gwa)
         profile_text = compile_profile_text(student)
 
-        print("Student Profile parsed cleanly! Validation successful.")
-        print(f"Parsed Name: {student.full_name}, GWA: {student.gwa}")
-        print(f"Success! Successfully parsed {len(scholarships)} scholarships.")
-
         # Calculate CHED ranking
         academic_pts = get_academic_rating(student.gwa)
         income_pts = get_annual_gross_income_rating(student.annual_family_income)
         bonus_pts = apply_bonus(student.special_group)
 
-        print(f"Academic: {academic_pts}, Income: {income_pts}, Bonus: {bonus_pts}")
-
         # Final Score
-        regulatory_score = ((academic_pts * 0.70) + (income_pts * 0.30)) + bonus_pts
-        print(f"Score: {regulatory_score}")
+        eligibility_score = ((academic_pts * 0.70) + (income_pts * 0.30)) + bonus_pts
 
         results = generate_recommendations(
-            regulatory_score=regulatory_score,
+            eligibility_score=eligibility_score,
             student_profile=profile_text,
             student_annual_income=student.annual_family_income,
             scholarships=scholarships
         )
 
-        return results
+        response: List[RecommendationResult] = []
+        for res in results:
+            response.append({
+                "id": res['id'],
+                "e_recommend": res['e_recommend'],
+                'match': res['match'],
+                'breakdown': {
+                    'eligibility': round(res['eligibility'], 2),
+                    'profile': round(res['profile'], 2),
+                    'academic': academic_pts,
+                    'income': income_pts,
+                    'bonus': bonus_pts
+                }
+            })
+
+        return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"eRecommend engine error: {str(e)}")
