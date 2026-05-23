@@ -9,7 +9,7 @@ from app.pipeline.preprocess import (
     standardized_grade_percentage, 
     get_academic_rating, 
     get_annual_gross_income_rating, 
-    apply_bonus
+    apply_bonus,
 )
 
 app = FastAPI(
@@ -59,6 +59,7 @@ async def recommend(payload: RecommendationPayload):
             eligibility_score=eligibility_score,
             student_profile=profile_text,
             student_annual_income=student.annual_family_income,
+            student_grade=student.gwa,
             scholarships=scholarships
         )
 

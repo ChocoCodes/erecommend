@@ -3,6 +3,7 @@ from sentence_transformers import SentenceTransformer
 from app.schemas import Scholarship
 from typing import List, Dict, Any
 from app.pipeline.preprocess import get_match_category
+from app.pipeline.preprocess import preprocess_scholarship 
 
 print("Loading SentenceTransformer ('all-MiniLM-L6-v2')...")
 model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -34,7 +35,8 @@ def cosine_similarity(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
 def generate_recommendations(
         eligibility_score: float, 
         student_profile: str, 
-        student_annual_income: float, 
+        student_annual_income: float,
+        student_grade: float,
         scholarships: List[Scholarship]
     ) -> List[Dict[str, Any]]:
     """
@@ -50,12 +52,16 @@ def generate_recommendations(
             # If student's background family income exceeds the scholarship's cap, drop it
             if student_annual_income > s.annual_family_income:
                 continue
-
-        scholarship_vector = get_embedding(s.description)
+        if student_grade < s.cutoff_grade:
+            continue
+        
+        scholarship_text = preprocess_scholarship(s)
+        scholarship_vector = get_embedding(scholarship_text)
         similarity = cosine_similarity(student_vector, scholarship_vector)
 
-        semantic_score_norm = max(0.0, similarity * 100.0) * 0.30
-        final_score = (eligibility_score * 0.70) + semantic_score_norm
+        semantic_score_weighted = max(0.0, similarity * 100.0) * 0.40
+        eligibility_score_weighted = (eligibility_score * 0.60)
+        final_score = eligibility_score_weighted + semantic_score_weighted
 
         match = get_match_category(final_score)
 
@@ -63,8 +69,8 @@ def generate_recommendations(
             "id": s.id,
             "e_recommend": round(final_score, 2),
             "match": match,
-            'eligibility': eligibility_score * 0.70,
-            "profile": semantic_score_norm
+            'eligibility': eligibility_score_weighted,
+            "profile": semantic_score_weighted
         })
     
     recommendations.sort(key=lambda x: x['e_recommend'], reverse=True)

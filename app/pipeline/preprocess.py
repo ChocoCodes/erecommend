@@ -1,4 +1,4 @@
-from app.schemas import StudentProfile
+from app.schemas import StudentProfile, Scholarship
 
 def standardized_grade_percentage(gwa: float) -> float:
     """ 
@@ -8,28 +8,26 @@ def standardized_grade_percentage(gwa: float) -> float:
     if gwa < 1.0 or gwa > 5.0: return 75.0
     return round(100.0 - ((gwa - 1) * 10.0), 2)
 
-def compile_profile_text(profile: StudentProfile) -> str:
-    """ Concatenates profile features into a rich text string optimized for embedding arrays. """
-    blocks = [
-        f"Student Profile for { profile.full_name }",
-        f"Personal Background: { profile.bio } located in { profile.city }, { profile.region }",
-        f"Highest Education: { profile.highest_degree }"
-    ]
+def compile_profile_text(student: StudentProfile) -> str:
+    """
+    Synthesizes loose profile attributes into a coherent, 
+    contextually dense narrative to optimize vector space proximity match.
+    """
+    achievements = ", ".join([i.title for i in student.profile_items if i.category == 'achievements'])
+    skills = ", ".join([i.title for i in student.profile_items if i.category == 'skills_interests'])
+    extracurriculars = ", ".join([i.title for i in student.profile_items if i.category == 'extracurriculars'])
 
-    categories = {}
-    for item in profile.profile_items:
-        cat = item.category.lower()
-        detail = f"'{item.title}'"
-        if item.description: detail += f" ({item.description})"
-        entity = item.issuer or item.organization
-        if entity: detail += f" at {entity}"
-        categories.setdefault(cat, []).append(detail)
-        
-    for cat, details in categories.items():
-        blocks.append(f"{cat.replace('_', ' ').capitalize()}: {'; '.join(details)}.")
-    
-    profile_compiled = " ".join(blocks)
-    return profile_compiled
+    # Build a profile string designed to structurally match scholarship eligibility texts
+    return (
+        f"A student currently at the educational level of {student.highest_degree}. "
+        f"Professional aspirations and intent focus on working as an {student.bio}. "
+        f"Demonstrated field track skills and core academic engineering interests encompass: {skills}. "
+        f"Documented student achievements and programmatic milestones include: {achievements}. "
+        f"Active engagement in student organizational or leadership roles: {extracurriculars}."
+    )
+
+def preprocess_scholarship(scholarship: Scholarship) -> str:
+    return f"About the scholarship: {scholarship.description}. Focus areas include: {scholarship.tags}."
 
 def get_academic_rating(grade_percentage: float) -> int:
     """
@@ -70,7 +68,8 @@ def apply_bonus(student_special_group: str | None) -> int:
     return 5 if student_special_group in special_groups else 0
 
 def get_match_category(rating: float) -> str:
-    if rating >= 88.0: return "strong"
+    if rating >= 90.0: return "strong"
     elif rating >= 75.0: return "good"
-    else: return "fair"
+    elif rating >= 60.0: return "fair"
+    else: return "low"
     

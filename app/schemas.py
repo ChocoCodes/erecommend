@@ -32,7 +32,8 @@ class Scholarship(BaseModel):
     description: str 
     annual_family_income: Optional[float] = None 
     eligibility: str 
-
+    tags: List[str]
+    
 class RecommendationPayload(BaseModel):
     student: StudentProfile 
     scholarships: List[Scholarship]
