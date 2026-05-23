@@ -27,7 +27,7 @@ def compile_profile_text(student: StudentProfile) -> str:
     )
 
 def preprocess_scholarship(scholarship: Scholarship) -> str:
-    return f"About the scholarship: {scholarship.description}. Focus areas include: {scholarship.tags}."
+    return f"About the scholarship: {scholarship.description}. {f"Focus areas include: {scholarship.tags}" if scholarship.tags else ""}."
 
 def get_academic_rating(grade_percentage: float) -> int:
     """
